@@ -1,0 +1,44 @@
+package com.company;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
+public class Main {
+
+    public static void main(String[] args) {
+        if (args.length != 8) {
+            System.err.printf("Invalid number of arguments!");
+            System.err.printf("Usage e.g.: cavityFinder -i inputfile -o outputfile -probe 1.7 -resolution 0.25");
+            return;
+        }
+
+        String infile, outfile;
+        double probeRadius, resolution;
+
+        List argsList = Arrays.asList(args);
+        int infileIndex = argsList.indexOf("-i");
+        int outfileIndex = argsList.indexOf("-o");
+        int probeIndex = argsList.indexOf("-probe");
+        int resolutionIndex = argsList.indexOf("-resolution");
+
+        infile = infileIndex != -1 ? args[infileIndex + 1] : null;
+        outfile = outfileIndex != -1 ? args[outfileIndex + 1] : null;
+        probeRadius = probeIndex != -1 ? Double.parseDouble(args[probeIndex + 1]) : -1;
+        resolution = resolutionIndex != -1 ? Double.parseDouble(args[resolutionIndex + 1]) : -1;
+
+        if (infile == null || outfile == null || probeRadius == -1 || resolution == -1) {
+            System.err.printf("Invalid usage!");
+            return;
+        }
+
+        Data im = new Data(infile, resolution);
+        SphereSetGenerator gen = new SphereSetGenerator(im, probeRadius);
+        HashSet<String> set = gen.allCavities();
+        for (String s : set) {
+            System.out.println(s);
+        }
+	// write your code here
+    }
+
+}

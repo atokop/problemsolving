@@ -12,14 +12,10 @@ import java.util.HashSet;
  */
 public class SphereSetGenerator {
     private ArrayList<Atom> xsorted;
-    private ArrayList<Atom> ysorted;
-    private ArrayList<Atom> zsorted;
     double probeRadius;
     private Data data;
     public SphereSetGenerator(Data data, double probeRadius) {
         xsorted = data.getAtomsXSorted();
-        ysorted = data.getAtomsYSorted();
-        zsorted = data.getAtomsZSorted();
         this.probeRadius = probeRadius;
         this.data = data;
     }
@@ -94,58 +90,21 @@ public class SphereSetGenerator {
         for (int i=-1; i<=1; i++) {
             for (int j=-1; j<=1; j++) {
                 for (int k=-1; k<=1; k++) {
-                    int t = x+i;
-                    int u = y+j;
-                    int v = z+k;
-                    CoordinateLabel value = data.getLabel(x+i, y+j, z+k);
-                    boolean first =(data.getLabel(x+i, y+j, z+k) == CoordinateLabel.EMPTY_VOID
-                            || data.getLabel(x+i, y+j, z+k) == CoordinateLabel.EMPTY_NONVOID);
-                    boolean second = allVoids.contains(gridLocationToStringLocation(x+i, y+j, z+k));
-                    if ( first
-                            && second) {
+                    if ((data.getLabel(x+i, y+j, z+k) == CoordinateLabel.EMPTY_VOID
+                            || data.getLabel(x+i, y+j, z+k) == CoordinateLabel.EMPTY_NONVOID)
+                            && allVoids.contains(gridLocationToStringLocation(x+i, y+j, z+k))) {
                         touchesEdge = removeNonCavitySpacesHelper(x+i, y+j, z+k, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
                     }
                 }
             }
         }
 
-//        if ((data.getLabel(x-1, y, z) == CoordinateLabel.EMPTY_VOID
-//                || data.getLabel(x-1, y, z) == CoordinateLabel.EMPTY_NONVOID)
-//                && allVoids.contains(gridLocationToStringLocation(x - 1, y, z))) {
-//            touchesEdge = removeNonCavitySpacesHelper(x-1, y, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-//        }
-//        if ((data.getLabel(x+1, y, z) == CoordinateLabel.EMPTY_VOID
-//                || data.getLabel(x+1, y, z) == CoordinateLabel.EMPTY_NONVOID)
-//                && allVoids.contains(gridLocationToStringLocation(x + 1, y, z))) {
-//            touchesEdge = removeNonCavitySpacesHelper (x+1, y, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-//        }
-//        if ((data.getLabel(x, y-1, z) == CoordinateLabel.EMPTY_VOID ||
-//                data.getLabel(x, y-1, z) == CoordinateLabel.EMPTY_NONVOID)
-//                && allVoids.contains(gridLocationToStringLocation(x, y - 1, z))) {
-//            touchesEdge = removeNonCavitySpacesHelper(x, y-1, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-//        }
-//        if ((data.getLabel(x, y+1, z) == CoordinateLabel.EMPTY_VOID ||
-//                data.getLabel(x, y+1, z) == CoordinateLabel.EMPTY_NONVOID)
-//                && allVoids.contains(gridLocationToStringLocation(x, y + 1, z))) {
-//            touchesEdge = removeNonCavitySpacesHelper(x, y+1, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-//        }
-//        if ((data.getLabel(x, y, z-1) == CoordinateLabel.EMPTY_VOID ||
-//                data.getLabel(x, y, z-1) == CoordinateLabel.EMPTY_NONVOID)
-//                && allVoids.contains(gridLocationToStringLocation(x, y, z - 1))) {
-//            touchesEdge = touchesEdge || removeNonCavitySpacesHelper(x, y, z-1, cavitiesSet, allVoids, touchesEdge);
-//        }
-//        if ((data.getLabel(x, y, z+1) == CoordinateLabel.EMPTY_VOID ||
-//                data.getLabel(x, y, z+1) == CoordinateLabel.EMPTY_NONVOID)
-//                && allVoids.contains(gridLocationToStringLocation(x, y, z + 1))) {
-//            touchesEdge = removeNonCavitySpacesHelper(x, y, z+1, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-//        }
         if (!touchesEdge) {
             double xcoord, ycoord, zcoord;
             xcoord = data.xIndexToCoordinate(x);
             ycoord = data.yIndexToCoordinate(y);
             zcoord = data.zIndexToCoordinate(z);
             cavitiesSet.add(gridLocationToString(xcoord, ycoord, zcoord));
-//            cavitiesSet.add(gridLocationToStringLocation(x, y, z));
         }
         return touchesEdge;
     }

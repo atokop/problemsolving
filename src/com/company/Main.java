@@ -1,8 +1,10 @@
 package com.company;
 
+import java.io.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
@@ -35,10 +37,31 @@ public class Main {
         Data im = new Data(infile, resolution);
         SphereSetGenerator gen = new SphereSetGenerator(im, probeRadius);
         HashSet<String> set = gen.allCavities();
-        for (String s : set) {
-            System.out.println(s);
+
+        Scanner instream;
+        PrintWriter output;
+        try {
+            output = new PrintWriter(outfile);
+            instream = new Scanner(new FileInputStream(infile));
+            while(instream.hasNextLine()) {
+                String inputLine = instream.nextLine();
+                output.println(inputLine);
+            }
+            int index = 0;
+            for (String s : set) {
+                output.println(atomFormat(s, index, probeRadius));
+            }
+            output.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
 	// write your code here
+    }
+
+    private static String atomFormat(String s, int index, double radius) {
+        String[] coords = s.split(",");
+        return "ATOM\t1000"+(index+1)+"\tMC\tCAV\t500"+(index+1)+"\t"+coords[0]+"\t"+coords[1]+"\t"+coords[2]+"\t1\t"+radius;
     }
 
 }

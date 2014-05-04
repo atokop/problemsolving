@@ -76,11 +76,11 @@ public class Data {
         Scanner infile = new Scanner(new FileInputStream(filename));
         while(infile.hasNextLine()) {
             String inputLine = infile.nextLine();
-            newSet.add(parseFromLine(inputLine));
+            newSet.add(parseAtomFromLine(inputLine));
         }
         return newSet;
     }
-    private Atom parseFromLine(String line) {
+    private Atom parseAtomFromLine(String line) {
         String[] arr = line.split("\\s+");
         return new Atom(Double.parseDouble(arr[9]), Double.parseDouble(arr[5]), Double.parseDouble(arr[6]), Double.parseDouble(arr[7]));
     }

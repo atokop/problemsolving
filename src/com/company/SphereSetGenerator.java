@@ -2,7 +2,6 @@ package com.company;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * Created with IntelliJ IDEA.
@@ -48,31 +47,32 @@ public class SphereSetGenerator {
             for (int y=0; y<data.yLength(); y++) {
                 for (int z=0; z<data.zLength(); z++) {
                     if (data.getLabel(x, y, z) == CoordinateLabel.EMPTY_VOID) {
-                        allVoidLocations.add(gridLocationToString(x, y, z));
+                        allVoidLocations.add(gridLocationToStringLocation(x, y, z));
                     }
                 }
             }
         }
 
+
         HashSet<String> cavityCoordinates = new HashSet<String>();
         while (!allVoidLocations.isEmpty()) {
             String nextVoid = allVoidLocations.iterator().next();
-            int x = stringToGridLocation(nextVoid)[0];
-            int y = stringToGridLocation(nextVoid)[1];
-            int z = stringToGridLocation(nextVoid)[2];
+            int x = stringLocationToGridLocation(nextVoid)[0];
+            int y = stringLocationToGridLocation(nextVoid)[1];
+            int z = stringLocationToGridLocation(nextVoid)[2];
             removeNonCavitySpacesHelper(x, y, z, cavityCoordinates, allVoidLocations, false);
         }
         return cavityCoordinates;
     }
 
-    private String gridLocationToString(int x, int y, int z) {
+    private String gridLocationToStringLocation(int x, int y, int z) {
         return "" + x + "," + y + "," + z;
     }
 
     private String gridLocationToString(double x, double y, double z) {
         return "" + x + "," + y + "," + z;
     }
-    private int[] stringToGridLocation(String location) {
+    private int[] stringLocationToGridLocation(String location) {
         String[] strings = location.split(",");
         if (strings.length != 3) {
             System.err.printf("Invalid grid location given");
@@ -85,48 +85,67 @@ public class SphereSetGenerator {
         return ret;
     }
     private boolean removeNonCavitySpacesHelper(int x, int y, int z, HashSet<String> cavitiesSet, HashSet<String> allVoids, boolean touchesEdge) {
-        String locationString = gridLocationToString(x, y, z);
+        String locationString = gridLocationToStringLocation(x, y, z);
         allVoids.remove(locationString);
         if (x==0 || x==data.xLength()-1 || y == 0 || y == data.yLength()-1 || z==0 || z==data.zLength()-1) {
             touchesEdge = true;
         }
-        if ((data.getLabel(x-1, y, z) == CoordinateLabel.EMPTY_VOID
-                || data.getLabel(x-1, y, z) == CoordinateLabel.EMPTY_NONVOID)
-                && allVoids.contains(gridLocationToString(x-1, y, z))) {
-            touchesEdge = removeNonCavitySpacesHelper(x-1, y, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
+
+        for (int i=-1; i<=1; i++) {
+            for (int j=-1; j<=1; j++) {
+                for (int k=-1; k<=1; k++) {
+                    int t = x+i;
+                    int u = y+j;
+                    int v = z+k;
+                    CoordinateLabel value = data.getLabel(x+i, y+j, z+k);
+                    boolean first =(data.getLabel(x+i, y+j, z+k) == CoordinateLabel.EMPTY_VOID
+                            || data.getLabel(x+i, y+j, z+k) == CoordinateLabel.EMPTY_NONVOID);
+                    boolean second = allVoids.contains(gridLocationToStringLocation(x+i, y+j, z+k));
+                    if ( first
+                            && second) {
+                        touchesEdge = removeNonCavitySpacesHelper(x+i, y+j, z+k, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
+                    }
+                }
+            }
         }
-        if ((data.getLabel(x+1, y, z) == CoordinateLabel.EMPTY_VOID
-                || data.getLabel(x+1, y, z) == CoordinateLabel.EMPTY_NONVOID)
-                && allVoids.contains(gridLocationToString(x+1, y, z))) {
-            touchesEdge = removeNonCavitySpacesHelper (x+1, y, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-        }
-        if ((data.getLabel(x, y-1, z) == CoordinateLabel.EMPTY_VOID ||
-                data.getLabel(x, y-1, z) == CoordinateLabel.EMPTY_NONVOID)
-                && allVoids.contains(gridLocationToString(x, y-1, z))) {
-            touchesEdge = removeNonCavitySpacesHelper(x, y-1, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-        }
-        if ((data.getLabel(x, y+1, z) == CoordinateLabel.EMPTY_VOID ||
-                data.getLabel(x, y+1, z) == CoordinateLabel.EMPTY_NONVOID)
-                && allVoids.contains(gridLocationToString(x, y+1, z))) {
-            touchesEdge = removeNonCavitySpacesHelper(x, y+1, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-        }
-        if ((data.getLabel(x, y, z-1) == CoordinateLabel.EMPTY_VOID ||
-                data.getLabel(x, y, z-1) == CoordinateLabel.EMPTY_NONVOID)
-                && allVoids.contains(gridLocationToString(x, y, z-1))) {
-            touchesEdge = touchesEdge || removeNonCavitySpacesHelper(x, y, z-1, cavitiesSet, allVoids, touchesEdge);
-        }
-        if ((data.getLabel(x, y, z+1) == CoordinateLabel.EMPTY_VOID ||
-                data.getLabel(x, y, z+1) == CoordinateLabel.EMPTY_NONVOID)
-                && allVoids.contains(gridLocationToString(x, y, z+1))) {
-            touchesEdge = removeNonCavitySpacesHelper(x, y, z+1, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
-        }
+
+//        if ((data.getLabel(x-1, y, z) == CoordinateLabel.EMPTY_VOID
+//                || data.getLabel(x-1, y, z) == CoordinateLabel.EMPTY_NONVOID)
+//                && allVoids.contains(gridLocationToStringLocation(x - 1, y, z))) {
+//            touchesEdge = removeNonCavitySpacesHelper(x-1, y, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
+//        }
+//        if ((data.getLabel(x+1, y, z) == CoordinateLabel.EMPTY_VOID
+//                || data.getLabel(x+1, y, z) == CoordinateLabel.EMPTY_NONVOID)
+//                && allVoids.contains(gridLocationToStringLocation(x + 1, y, z))) {
+//            touchesEdge = removeNonCavitySpacesHelper (x+1, y, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
+//        }
+//        if ((data.getLabel(x, y-1, z) == CoordinateLabel.EMPTY_VOID ||
+//                data.getLabel(x, y-1, z) == CoordinateLabel.EMPTY_NONVOID)
+//                && allVoids.contains(gridLocationToStringLocation(x, y - 1, z))) {
+//            touchesEdge = removeNonCavitySpacesHelper(x, y-1, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
+//        }
+//        if ((data.getLabel(x, y+1, z) == CoordinateLabel.EMPTY_VOID ||
+//                data.getLabel(x, y+1, z) == CoordinateLabel.EMPTY_NONVOID)
+//                && allVoids.contains(gridLocationToStringLocation(x, y + 1, z))) {
+//            touchesEdge = removeNonCavitySpacesHelper(x, y+1, z, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
+//        }
+//        if ((data.getLabel(x, y, z-1) == CoordinateLabel.EMPTY_VOID ||
+//                data.getLabel(x, y, z-1) == CoordinateLabel.EMPTY_NONVOID)
+//                && allVoids.contains(gridLocationToStringLocation(x, y, z - 1))) {
+//            touchesEdge = touchesEdge || removeNonCavitySpacesHelper(x, y, z-1, cavitiesSet, allVoids, touchesEdge);
+//        }
+//        if ((data.getLabel(x, y, z+1) == CoordinateLabel.EMPTY_VOID ||
+//                data.getLabel(x, y, z+1) == CoordinateLabel.EMPTY_NONVOID)
+//                && allVoids.contains(gridLocationToStringLocation(x, y, z + 1))) {
+//            touchesEdge = removeNonCavitySpacesHelper(x, y, z+1, cavitiesSet, allVoids, touchesEdge) || touchesEdge;
+//        }
         if (!touchesEdge) {
             double xcoord, ycoord, zcoord;
             xcoord = data.xIndexToCoordinate(x);
             ycoord = data.yIndexToCoordinate(y);
             zcoord = data.zIndexToCoordinate(z);
             cavitiesSet.add(gridLocationToString(xcoord, ycoord, zcoord));
-//            cavitiesSet.add(gridLocationToString(x, y, z));
+//            cavitiesSet.add(gridLocationToStringLocation(x, y, z));
         }
         return touchesEdge;
     }
@@ -153,15 +172,15 @@ public class SphereSetGenerator {
                     double zdiff = atom.myZ - data.zIndexToCoordinate(z);
                     double distanceSquared = xdiff*xdiff + ydiff*ydiff + zdiff*zdiff;
                     if (oldValue == CoordinateLabel.EMPTY_VOID) {
-                        if (distanceSquared <= (atom.radius+probeRadius) * (atom.radius+probeRadius)) {
+                        if (distanceSquared < (atom.radius+probeRadius) * (atom.radius+probeRadius)) {
                             data.setLabel(x, y, z, CoordinateLabel.EMPTY_NONVOID);
                         }
-                        if (distanceSquared <= atom.radius * atom.radius) {
+                        if (distanceSquared < atom.radius * atom.radius) {
                             data.setLabel(x, y, z, CoordinateLabel.ATOM);
                         }
                     }
                     else if (oldValue == CoordinateLabel.EMPTY_NONVOID) {
-                        if (distanceSquared <= atom.radius * atom.radius) {
+                        if (distanceSquared < atom.radius * atom.radius) {
                             data.setLabel(x, y, z, CoordinateLabel.ATOM);
                         }
                     }

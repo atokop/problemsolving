@@ -4,22 +4,29 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
+/**
  * Created with IntelliJ IDEA.
  * User: kwamina
  * Date: 4/18/14
  * Time: 11:43 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * Generator class that runs the majority of the algorithm. Labels each coordinate with the appropriate tag depending
+ * on the proximity of nearby atoms. The a recursive "floodfill" method is then run on each of the void spaces to
+ * determine whether it touches the outside. If so, these points are not returned as cavities.
  */
 public class SphereSetGenerator {
     private ArrayList<Atom> xsorted;
     double probeRadius;
     private Data data;
     public SphereSetGenerator(Data data, double probeRadius) {
-        xsorted = data.getAtomsXSorted();
+        xsorted = data.getAtoms();
         this.probeRadius = probeRadius;
         this.data = data;
     }
 
+    /**
+     * Labels the grid according to coordinates' proximity to atoms.
+     */
     private void labelGrid() {
         for (int i=0; i<data.xLength(); i++) {
              for (int j=0; j<data.yLength(); j++) {
@@ -32,11 +39,20 @@ public class SphereSetGenerator {
             labelNearbyPoints(atom);
         }
     }
+
+    /**
+     * Returns the set of all cavities
+     * @return HashSet containing a string representation of cavities.
+     */
     public HashSet<String> allCavities() {
         labelGrid();
         return removeNonCavitySpaces();
     }
 
+    /**
+     * Removes void spaces that are not cavities (i.e. touch the edges)
+     * @return cavityCoordinates returns all the cavity coordinates after removing non-cavity voids.
+     */
     private HashSet<String> removeNonCavitySpaces() {
         HashSet<String> allVoidLocations = new HashSet<String>();
         for(int x=0; x<data.xLength(); x++) {
@@ -61,10 +77,24 @@ public class SphereSetGenerator {
         return cavityCoordinates;
     }
 
+    /**
+     * Returns a string representation of a location in the grid
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @param z z-coordinate
+     * @return string representation of the location.
+     */
     private String gridLocationToStringLocation(int x, int y, int z) {
         return "" + x + "," + y + "," + z;
     }
 
+    /**
+     * Returns a string representation of a location in the grid, overloaded for doubles.
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @param z z-coordinate
+     * @return string representation of the location.
+     */
     private String gridLocationToString(double x, double y, double z) {
         return "" + x + "," + y + "," + z;
     }
@@ -80,6 +110,18 @@ public class SphereSetGenerator {
         }
         return ret;
     }
+
+    /**
+     * Helper method to remove all the non-cavity spaces from the set.
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @param z z-coordinate
+     * @param cavitiesSet set that the void is added to if it is a cavity.
+     * @param allVoids all voids being tested. voids are removed as helper method progresses
+     * @param touchesEdge boolean input that tells whether a previous, neighbouring void has already been shown to
+     *                    lead to the edge
+     * @return touchesEdge value corresponding to whether this void has a path that leads to the edge.
+     */
     private boolean removeNonCavitySpacesHelper(int x, int y, int z, HashSet<String> cavitiesSet, HashSet<String> allVoids, boolean touchesEdge) {
         String locationString = gridLocationToStringLocation(x, y, z);
         allVoids.remove(locationString);
@@ -110,7 +152,11 @@ public class SphereSetGenerator {
     }
 
 
-
+    /**
+     * For a given atom, labels nearby points according to whether they are empty but too close to contain a probe,
+     * or within the atom itself.
+     * @param atom the atom for which the nearby points are labelled.
+     */
     private void labelNearbyPoints(Atom atom) {
         int minX = data.getXIndex(atom.myX - (atom.radius + probeRadius));
         int maxX = data.getXIndex(atom.myX + (atom.radius + probeRadius));

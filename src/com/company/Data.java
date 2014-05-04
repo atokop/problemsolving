@@ -11,6 +11,12 @@ import java.util.*;
  * Time: 12:31 PM
  * To change this template use File | Settings | File Templates.
  */
+
+/**
+ * Data class to store and import data. Contains a grid that represents a label for each coordinate depending on whether
+ * the coordinate is inside an atom, too near an atom to fit a probe sphere, or completely separate and possibly a
+ * cavity.
+ */
 public class Data {
     private double resolution;
     private CoordinateLabel[][][] grid;
@@ -34,6 +40,9 @@ public class Data {
 //        System.out.println("this");
     }
 
+    /*finds the bounds of the box surround the protein and denoting the outside. it does this by iterating through atoms
+     **and finding the mximum and minimum of each coordinate
+    */
     private Bounds proteinBounds(HashSet<Atom> atoms) {
         Iterator<Atom> it = atoms.iterator();
         double xmin, ymin, zmin, xmax, ymax, zmax;
@@ -71,6 +80,7 @@ public class Data {
         return bounds;
     }
 
+    /*Uses scanner to read the input file and add the atom after parsing the line*/
     private HashSet<Atom> importAtoms(String filename) throws FileNotFoundException {
         HashSet<Atom> newSet = new HashSet<Atom>();
         Scanner infile = new Scanner(new FileInputStream(filename));
@@ -80,91 +90,90 @@ public class Data {
         }
         return newSet;
     }
+
+    /*Parses each line from the input and returns a new atom based on the details contained in the line*/
     private Atom parseAtomFromLine(String line) {
         String[] arr = line.split("\\s+");
         return new Atom(Double.parseDouble(arr[9]), Double.parseDouble(arr[5]), Double.parseDouble(arr[6]), Double.parseDouble(arr[7]));
     }
 
-//    public CoordinateLabel[][][] getGrid() {
-//        return grid;
-//    }
+    /*returns the length of the grid in the x dimension*/
     public int xLength() {
         return grid.length;
     }
+
+    /*returns the length of the grid in the y dimension*/
     public int yLength() {
             return grid[0].length;
     }
+    /*returns the length of the grid in the z dimension*/
     public int zLength() {
         return grid[0][0].length;
     }
 
-    public ArrayList<Atom> getAtomsXSorted() {
+    /**
+     * Returns the list of all atoms imported.
+     * @return
+     */
+    public ArrayList<Atom> getAtoms() {
         ArrayList<Atom> ret = new ArrayList<Atom>();
         Iterator<Atom> it = atoms.iterator();
         while(it.hasNext()) {
             ret.add(it.next());
         }
-        Collections.sort(ret, new Comparator<Atom>() {
-            @Override
-            public int compare(Atom atom, Atom atom2) {
-                return atom.myX > atom2.myX ? 1 : -1;
-            }
-        });
         return ret;
     }
 
-    public ArrayList<Atom> getAtomsYSorted() {
-        ArrayList<Atom> ret = new ArrayList<Atom>();
-        Iterator<Atom> it = atoms.iterator();
-        while(it.hasNext()) {
-            ret.add(it.next());
-        }
-        Collections.sort(ret, new Comparator<Atom>() {
-            @Override
-            public int compare(Atom atom, Atom atom2) {
-                return atom.myY > atom2.myY ? 1 : -1;
-            }
-        });
-        return ret;
-    }
-
-    public ArrayList<Atom> getAtomsZSorted() {
-        ArrayList<Atom> ret = new ArrayList<Atom>();
-        Iterator<Atom> it = atoms.iterator();
-        while(it.hasNext()) {
-            ret.add(it.next());
-        }
-        Collections.sort(ret, new Comparator<Atom>() {
-            @Override
-            public int compare(Atom atom, Atom atom2) {
-                return atom.myZ > atom2.myZ ? 1 : -1;
-            }
-        });
-        return ret;
-    }
-
-    public double getResolution() {
-        return resolution;
-    }
-
+    /**
+     * Returns the coordinate value corresponding to the given x index
+     * @param indexValue x index
+     * @return coordinate value
+     */
     public double xIndexToCoordinate(int indexValue) {
         return bounds.minX + resolution * indexValue;
     }
 
+    /**
+     * Returns the coordinate value corresponding to the given y index
+     * @param indexValue y index
+     * @return coordinate value
+     */
     public double yIndexToCoordinate(int indexValue) {
         return bounds.minY + resolution * indexValue;
     }
 
+    /**
+     * Returns the coordinate value corresponding to the given z index
+     * @param indexValue z index
+     * @return coordinate value
+     */
     public double zIndexToCoordinate(int indexValue) {
         return bounds.minZ + resolution * indexValue;
     }
 
+    /**
+     *
+     * Gets the label at a given location in the grid. Contains bounds checking.
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @param z z-coordinate
+     * @return CoordinateLabel value of the location in the grid.
+     */
     public CoordinateLabel getLabel(int x, int y, int z) {
         if (x >= grid.length || x < 0 || y >= grid[0].length || y < 0 || z >= grid[0][0].length || z < 0) {
             return null;
         }
         return grid[x][y][z];
     }
+
+    /**
+     * Sets the label at a given location in the grid to a given value. Contains bounds checking.
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @param z z-coordinate
+     * @param newVal new value for this location
+     * @return true if possible, false otherwise (i.e. if location was outside of grid)
+     */
     public boolean setLabel(int x, int y, int z, CoordinateLabel newVal) {
         if (x >= grid.length || x < 0 || y >= grid[0].length || y < 0 || z >= grid[0][0].length || z < 0) {
             return false;
@@ -173,16 +182,36 @@ public class Data {
         return true;
     }
 
+    /**
+     * For a given x coordinate value, returns the index that corresponds to its location in the grid.
+     * @param coordinateValue x-coordinate
+     * @return x index in grid
+     */
     public int getXIndex(double coordinateValue) {
         return (int)((coordinateValue - bounds.minX) / resolution);
     }
+
+    /**
+     * For a given y coordinate value, returns the index that corresponds to its location in the grid.
+     * @param coordinateValue y-coordinate
+     * @return y index in grid
+     */
     public int getYIndex(double coordinateValue) {
         return (int)((coordinateValue - bounds.minY) / resolution);
     }
+
+    /**
+     * For a given Z coordinate value, returns the index that corresponds to its location in the grid.
+     * @param coordinateValue z-coordinate
+     * @return z index in grid
+     */
     public int getZIndex(double coordinateValue) {
         return (int)((coordinateValue - bounds.minY) / resolution);
     }
 
+    /**
+     * Private class that stores a representation of the bounding box of a protein.
+     */
     private class Bounds {
         public double minX;
         public double minY;

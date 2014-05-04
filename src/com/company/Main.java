@@ -6,6 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Main class. Controls file output and drives rest of program.
+ * Group Members: Kwamina (Robert) Orleans-Pobee
+ * Thomas Lazor
+ * Ian McCormack
+ * Tiffany Tran
+ */
 public class Main {
 
     public static void main(String[] args) {
